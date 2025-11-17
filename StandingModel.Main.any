@@ -1,0 +1,91 @@
+// =======================
+// Main model file
+// =======================
+
+#include "libdef.any"
+
+Main = {
+  
+  // -----------------------
+  // BodyModel Configuration
+  // -----------------------
+  #include "Model/BodyModelConfiguration.any"
+  
+  // -----------------------
+  // Load Human Model from AMMR
+  // -----------------------
+  #include "<ANYBODY_PATH_BODY>/HumanModel.any"
+  
+  // -----------------------
+  // Define mannequin posture
+  // -----------------------
+  #include "Model/Mannequin.any"
+  
+  // -----------------------
+  // Compose the model
+  // -----------------------
+  AnyFolder Model = {
+    
+    // -----------------------
+    // Optional: COM for balance reference
+    // -----------------------
+    AnyVector CenterOfMassXZ = {0, 0};
+    
+    // -----------------------
+    // Ground footprint positions
+    // -----------------------
+    Environment.GlobalRef.RightFootPrint = {
+      AnyVec3 HeelPosition = {1.680, 0.200, -0.435};
+      AnyVec3 ToeDirection = {1, 0, 0.1};
+    };
+    
+    Environment.GlobalRef.LeftFootPrint = {
+      AnyVec3 HeelPosition = {1.680, 0.200, -0.435};
+      AnyVec3 ToeDirection = {1, 0, -0.1};
+    };
+    
+    // -----------------------
+    // Human body reference
+    // -----------------------
+    AnyFolder &BodyModel = .HumanModel.BodyModel;
+    
+    // -----------------------
+    // Default mannequin drivers
+    // -----------------------
+    AnyFolder &DefaultMannequinDrivers = .HumanModel.DefaultMannequinDrivers;
+    
+    // -----------------------
+    // Include environment
+    // -----------------------
+    #include "Model/Environment.any"
+    
+    // -----------------------
+    // Seat CAD model (from Input folder)
+    // -----------------------
+    #include "Input/seat.any"
+    
+    // -----------------------
+    // Connect seat to pelvis
+    // (included constraints and joint drivers)
+    // -----------------------
+    AnyFolder ModelEnvironmentConnection = {
+      #include "Model/JointsAndDrivers.any"
+      #include "Model/GRFPrediction.any"
+    };
+  };
+  
+  // -----------------------
+  // Study settings
+  // -----------------------
+  AnyBodyStudy Study = {
+    tStart = 0;
+    tEnd = 0;
+    nStep = 1;
+    Gravity = {0, -9.81, 0}; // adjust if different axis convention is used
+  };
+  
+  // -----------------------
+  // Run sequence
+  // -----------------------
+  #include "Model/RunAppSequence.any"
+};
